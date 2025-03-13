@@ -2,21 +2,70 @@ import { type Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
 
 export default {
-  content: ["./src/**/*.tsx"],
+    darkMode: ["class"],
+    content: ["./src/**/*.tsx"],
   theme: {
-    extend: {
-      fontFamily: {
-        sans: ["var(--font-geist-sans)", ...fontFamily.sans],
-      },
-      colors: {
-        teal: "#2EC4B6", // Base teal color
-        tealLight: "#A8E6CF", // Soft Mint (lighter shade)
-        tealDark: "#1B7F76", // Deep Teal (darker shade)
-        orange: "#FF6B00", // Bright Orange (for accents)
-        grayLight: "#F4F4F4", // Light Gray (for backgrounds)
-        grayDark: "#2B2D42", // Dark Gray (for text/contrast)
-      },
-    },
+  	extend: {
+  		fontFamily: {
+  			sans: [
+  				'var(--font-geist-sans)',
+                    ...fontFamily.sans
+                ]
+  		},
+  		colors: {
+  			teal: '#2EC4B6',
+  			tealLight: '#A8E6CF',
+  			tealDark: '#1B7F76',
+  			orange: '#FF6B00',
+  			grayLight: '#F4F4F4',
+  			grayDark: '#2B2D42',
+  			background: 'hsl(var(--background))',
+  			foreground: 'hsl(var(--foreground))',
+  			card: {
+  				DEFAULT: 'hsl(var(--card))',
+  				foreground: 'hsl(var(--card-foreground))'
+  			},
+  			popover: {
+  				DEFAULT: 'hsl(var(--popover))',
+  				foreground: 'hsl(var(--popover-foreground))'
+  			},
+  			primary: {
+  				DEFAULT: 'hsl(var(--primary))',
+  				foreground: 'hsl(var(--primary-foreground))'
+  			},
+  			secondary: {
+  				DEFAULT: 'hsl(var(--secondary))',
+  				foreground: 'hsl(var(--secondary-foreground))'
+  			},
+  			muted: {
+  				DEFAULT: 'hsl(var(--muted))',
+  				foreground: 'hsl(var(--muted-foreground))'
+  			},
+  			accent: {
+  				DEFAULT: 'hsl(var(--accent))',
+  				foreground: 'hsl(var(--accent-foreground))'
+  			},
+  			destructive: {
+  				DEFAULT: 'hsl(var(--destructive))',
+  				foreground: 'hsl(var(--destructive-foreground))'
+  			},
+  			border: 'hsl(var(--border))',
+  			input: 'hsl(var(--input))',
+  			ring: 'hsl(var(--ring))',
+  			chart: {
+  				'1': 'hsl(var(--chart-1))',
+  				'2': 'hsl(var(--chart-2))',
+  				'3': 'hsl(var(--chart-3))',
+  				'4': 'hsl(var(--chart-4))',
+  				'5': 'hsl(var(--chart-5))'
+  			}
+  		},
+  		borderRadius: {
+  			lg: 'var(--radius)',
+  			md: 'calc(var(--radius) - 2px)',
+  			sm: 'calc(var(--radius) - 4px)'
+  		}
+  	}
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config;
