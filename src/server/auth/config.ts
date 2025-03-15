@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { UserRole } from "@prisma/client";
-import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
+import { User, type DefaultSession, type NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { deleteCookie, getCookie } from "~/actions/cookies";
 import { db } from "~/server/db";
@@ -16,7 +17,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      role : UserRole;
+      role :UserRole
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -46,57 +47,31 @@ export const authConfig = {
         },
       },
     }),
-    DiscordProvider,
   ],
   adapter: PrismaAdapter(db),
-  events: {
-    async createUser({ user }) {
-      // this is the important step
-      const role = await getCookie("role");
-      if (role && role in UserRole) {
-        await db.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            role: role as UserRole,
-          },
-        });
-        await deleteCookie("role");
-      }
-    },
-  },
   session: { strategy: "jwt" },
-  callbacks: {
-    session: ({ session, token }) => {
-      if (token) {
-        return {
-          ...session,
-          user: {
-            ...session.user,
-            id: token.sub, // Use token.sub which contains the user ID
-            role: token.role as UserRole, // Add role from token
-          },
-        };
-      }
-      return session;
-    },
-    async jwt({ token, user }) {
-      // When initial sign in happens, user object is available
-      if (user) {
-        // Get user from database to ensure we have the role
-        const dbUser = await db.user.findUnique({
+  events:{
+    createUser: async ({user}:{user : User}) => {
+      const role = await getCookie("role")
+      if (role && user.id ) {
+        await db.user.update({
           where: { id: user.id },
-          select: { id: true, role: true },
-        });
-
-        return {
-          ...token,
-          id: user.id,
-          role: dbUser?.role ?? UserRole.USER, // Fallback to default role
-        };
+          data: { role: role as UserRole },
+        })
+        await deleteCookie("role")
+      }
+    }
+  },
+  callbacks: {
+    jwt({ token, user }) {
+      if (user) {
+       token.role = "role" in user ? user.role : UserRole.USER;
       }
       return token;
     },
+    session({ session, token }) { 
+      session.user.role = token.role as UserRole;
+      return session;
+    }
   },
 } satisfies NextAuthConfig;

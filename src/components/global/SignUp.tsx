@@ -13,10 +13,10 @@ export default function Login() {
     }
     return (
         <div
-            className="border border-white rounded-lg p-8 flex flex-col gap-4"
+            className=" p-8 flex flex-col gap-4"
         >
-            <Button onClick={handleSignIn}>Sign in</Button>
-            <div className="flex gap-4 [&_*]:border [&_*]:px-6 [&_*]:rounded-full [&_*]:cursor-pointer">
+            <Button onClick={handleSignIn}>Sign Up</Button>
+            <div className="flex gap-4 [&_*]:border [&_*]:border-black [&_*]:px-6 [&_*]:rounded-full [&_*]:cursor-pointer w-full  justify-center">
                 <div onClick={() => setRole(UserRole.USER)} className={role == UserRole.USER ? "opacity-100" : "opacity-50"}>User</div>
                 <div onClick={() => setRole(UserRole.TRAINER)} className={role == UserRole.TRAINER ? "opacity-100" : "opacity-50"}>Trainer</div>
             </div>
