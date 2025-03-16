@@ -1,11 +1,14 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { UserRole } from "@prisma/client";
 import { User, type DefaultSession, type NextAuthConfig } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-import { deleteCookie, getCookie } from "~/actions/cookies";
+import { deleteCookie, getCookie, setCookie } from "~/actions/cookies";
 import { db } from "~/server/db";
+import jwt from "jsonwebtoken";
+import { env } from "~/env";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -17,7 +20,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
-      role :UserRole
+      role: UserRole;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -50,28 +53,40 @@ export const authConfig = {
   ],
   adapter: PrismaAdapter(db),
   session: { strategy: "jwt" },
-  events:{
-    createUser: async ({user}:{user : User}) => {
-      const role = await getCookie("role")
-      if (role && user.id ) {
+  events: {
+    createUser: async ({ user }: { user: User }) => {
+      "use server";
+      const role = await getCookie("role");
+      console.log("role->", role);
+      if (role && user.id) {
         await db.user.update({
           where: { id: user.id },
           data: { role: role as UserRole },
-        })
-        await deleteCookie("role")
+        });
+        await deleteCookie("role");
       }
-    }
+    },
+    signOut: async () => {
+      "use server";
+      await deleteCookie("role");
+      await deleteCookie("token-for-backend");
+    },
+    session: async ({ token }) => {
+      "use server";
+      const tokenBackend = jwt.sign(token, env.AUTH_SECRET!);
+      await setCookie("token-for-backend", tokenBackend);
+    },
   },
   callbacks: {
-    jwt({ token, user }) {
+    async jwt({ token, user }) {
       if (user) {
-       token.role = "role" in user ? user.role : UserRole.USER;
+        token.role = "role" in user ? user.role : UserRole.USER;
       }
       return token;
     },
-    session({ session, token }) { 
+    session({ session, token }) {
       session.user.role = token.role as UserRole;
       return session;
-    }
+    },
   },
 } satisfies NextAuthConfig;
